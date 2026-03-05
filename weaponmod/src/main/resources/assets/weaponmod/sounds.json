@@ -1,0 +1,7 @@
+{
+    "gun_shot": { "sounds": [ "weaponmod:gun_shot" ] },
+    "empty_click": { "sounds": [ "weaponmod:empty_click" ] },
+    "click": { "sounds": [ "weaponmod:click" ] },
+    "grenade_explode": { "sounds": [ "weaponmod:grenade_explode" ] },
+    "reload": { "sounds": [ "weaponmod:reload" ] }
+}
