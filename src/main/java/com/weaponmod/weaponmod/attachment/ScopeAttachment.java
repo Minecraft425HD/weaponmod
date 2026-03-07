@@ -5,25 +5,30 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public class ScopeAttachment extends Item {
+public class ScopeAttachment extends BaseAttachmentItem {
     public ScopeAttachment() {
-        super(new Properties().stacksTo(1));
+        super(ModAttachments.SCOPE);
     }
 
+    // Fallback: Waffe in Haupthand, Attachment in Offhand → Rechtsklick
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack attachmentStack = player.getItemInHand(hand);
         ItemStack mainHand = player.getMainHandItem();
 
-        if (mainHand.getItem() instanceof GunItem gun && !gun.hasAttachment(mainHand)) {
+        if (mainHand.getItem() instanceof GunItem gun) {
             if (!level.isClientSide) {
-                gun.attach(mainHand, ModAttachments.SCOPE);
-                attachmentStack.shrink(1);
-                player.displayClientMessage(Component.literal("§aVisier angebracht!"), true);
+                if (gun.hasAttachmentType(mainHand, Attachment.Type.SCOPE)) {
+                    player.displayClientMessage(Component.literal("§cVisier bereits montiert!"), true);
+                } else if (!gun.addAttachment(mainHand, ModAttachments.SCOPE)) {
+                    player.displayClientMessage(Component.literal("§cMaximal 2 Zubehörteile pro Waffe!"), true);
+                } else {
+                    attachmentStack.shrink(1);
+                    player.displayClientMessage(Component.literal("§aVisier angebracht!"), true);
+                }
             }
             return InteractionResultHolder.success(attachmentStack);
         }

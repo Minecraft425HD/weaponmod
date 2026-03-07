@@ -69,8 +69,9 @@ public class ClientEventHandler {
         if (player == null) return;
         ItemStack mainHand = player.getMainHandItem();
         if (!(mainHand.getItem() instanceof GunItem gun)) return;
-        Attachment laserAtt = gun.getAttachment(mainHand);
-        if (laserAtt == null || laserAtt.getType() != Attachment.Type.LASER) return;
+        boolean hasLaser = gun.getAttachments(mainHand).stream()
+                .anyMatch(a -> a.getType() == Attachment.Type.LASER);
+        if (!hasLaser) return;
 
         Vec3 start = player.getEyePosition(1.0f);
         Vec3 look = player.getLookAngle();
@@ -103,8 +104,9 @@ public class ClientEventHandler {
         LocalPlayer player = mc.player;
         ItemStack mainHand = player.getMainHandItem();
         if (mainHand.getItem() instanceof GunItem gun) {
-            Attachment scopeAtt = gun.getAttachment(mainHand);
-            if (scopeAtt != null && scopeAtt.getType() == Attachment.Type.SCOPE) {
+            boolean hasScope = gun.getAttachments(mainHand).stream()
+                    .anyMatch(a -> a.getType() == Attachment.Type.SCOPE);
+            if (hasScope) {
                 if (mc.options.keyShift.isDown()) {
                     if (!isScopeZoomed) {
                         mc.options.fov().set(30);
