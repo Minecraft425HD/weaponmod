@@ -13,6 +13,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
@@ -41,9 +42,15 @@ public class ThrownGrenade extends ThrowableItemProjectile {
         this.entityData.define(GRENADE_TYPE, 0);
     }
 
+    private GrenadeType getGrenadeType() {
+        GrenadeType[] values = GrenadeType.values();
+        int index = Mth.clamp(entityData.get(GRENADE_TYPE), 0, values.length - 1);
+        return values[index];
+    }
+
     @Override
     protected Item getDefaultItem() {
-        return switch (GrenadeType.values()[entityData.get(GRENADE_TYPE)]) {
+        return switch (getGrenadeType()) {
             case FRAG -> ModItems.FRAG_GRENADE.get();
             case SMOKE -> ModItems.SMOKE_GRENADE.get();
             case FLASH -> ModItems.FLASH_GRENADE.get();
@@ -54,7 +61,7 @@ public class ThrownGrenade extends ThrowableItemProjectile {
     protected void onHit(HitResult result) {
         super.onHit(result);
         if (!this.level().isClientSide) {
-            GrenadeType type = GrenadeType.values()[entityData.get(GRENADE_TYPE)];
+            GrenadeType type = getGrenadeType();
             switch (type) {
                 case FRAG -> explode();
                 case SMOKE -> spawnSmoke();
@@ -93,13 +100,13 @@ public class ThrownGrenade extends ThrowableItemProjectile {
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("GrenadeType", entityData.get(GRENADE_TYPE));
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         entityData.set(GRENADE_TYPE, tag.getInt("GrenadeType"));
     }

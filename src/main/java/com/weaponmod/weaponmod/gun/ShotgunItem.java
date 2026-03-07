@@ -13,7 +13,7 @@ public class ShotgunItem extends GunItem {
     }
 
     @Override
-    protected void shootProjectile(Level level, Player player, ItemStack gunStack) {
+    public void shootProjectile(Level level, Player player, ItemStack gunStack) {
         for (int i = 0; i < 5; i++) {
             super.shootProjectile(level, player, gunStack);
         }

@@ -18,25 +18,7 @@ public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, WeaponMod.MOD_ID);
 
-    // Bestehende Waffen
-    public static final RegistryObject<Item> BASEBALL_BAT = ITEMS.register("baseball_bat", BaseballBatItem::new);
-    public static final RegistryObject<Item> MACHETE = ITEMS.register("machete", MacheteItem::new);
-    public static final RegistryObject<Item> AK47 = ITEMS.register("ak47", Ak47Item::new);
-    public static final RegistryObject<Item> PISTOL = ITEMS.register("pistol", PistolItem::new);
-
-    // Neue Waffen
-    public static final RegistryObject<Item> SHOTGUN = ITEMS.register("shotgun", ShotgunItem::new);
-    public static final RegistryObject<Item> SNIPER = ITEMS.register("sniper", SniperItem::new);
-    public static final RegistryObject<Item> REVOLVER = ITEMS.register("revolver", RevolverItem::new);
-    public static final RegistryObject<Item> MP5 = ITEMS.register("mp5", Mp5Item::new);
-    public static final RegistryObject<Item> COMBAT_KNIFE = ITEMS.register("combat_knife", CombatKnifeItem::new);
-
-    // Granaten
-    public static final RegistryObject<Item> FRAG_GRENADE = ITEMS.register("frag_grenade", FragGrenadeItem::new);
-    public static final RegistryObject<Item> SMOKE_GRENADE = ITEMS.register("smoke_grenade", SmokeGrenadeItem::new);
-    public static final RegistryObject<Item> FLASH_GRENADE = ITEMS.register("flash_grenade", FlashGrenadeItem::new);
-
-    // Magazine
+    // ---- Magazine ZUERST registrieren (werden von Gun-Konstruktoren benoetigt) ----
     public static final RegistryObject<Item> AK47_MAGAZINE = ITEMS.register("ak47_magazine",
             () -> new Item(new Item.Properties().stacksTo(16)));
     public static final RegistryObject<Item> PISTOL_MAGAZINE = ITEMS.register("pistol_magazine",
@@ -48,7 +30,7 @@ public class ModItems {
     public static final RegistryObject<Item> MP5_MAGAZINE = ITEMS.register("mp5_magazine",
             () -> new Item(new Item.Properties().stacksTo(20)));
 
-    // Munitionstypen
+    // ---- Munitionstypen ----
     public static final RegistryObject<Item> AMMO_STANDARD = ITEMS.register("ammo_standard",
             () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> AMMO_AP = ITEMS.register("ammo_ap",
@@ -58,14 +40,32 @@ public class ModItems {
     public static final RegistryObject<Item> AMMO_RUBBER = ITEMS.register("ammo_rubber",
             () -> new Item(new Item.Properties()));
 
-    // Attachments
-    public static final RegistryObject<Item> SCOPE = ITEMS.register("scope", ScopeAttachment::new);
-    public static final RegistryObject<Item> SILENCER = ITEMS.register("silencer", SilencerAttachment::new);
-    public static final RegistryObject<Item> LASER = ITEMS.register("laser", LaserAttachment::new);
-
-    // Legacy Munition
+    // ---- Legacy Munition ----
     public static final RegistryObject<Item> RIFLE_AMMO = ITEMS.register("rifle_ammo",
             () -> new Item(new Item.Properties().stacksTo(64)));
     public static final RegistryObject<Item> PISTOL_AMMO = ITEMS.register("pistol_ammo",
             () -> new Item(new Item.Properties().stacksTo(64)));
+
+    // ---- Schusswaffen (nach Magazinen!) ----
+    public static final RegistryObject<Item> AK47 = ITEMS.register("ak47", Ak47Item::new);
+    public static final RegistryObject<Item> PISTOL = ITEMS.register("pistol", PistolItem::new);
+    public static final RegistryObject<Item> SHOTGUN = ITEMS.register("shotgun", ShotgunItem::new);
+    public static final RegistryObject<Item> SNIPER = ITEMS.register("sniper", SniperItem::new);
+    public static final RegistryObject<Item> REVOLVER = ITEMS.register("revolver", RevolverItem::new);
+    public static final RegistryObject<Item> MP5 = ITEMS.register("mp5", Mp5Item::new);
+
+    // ---- Nahkampfwaffen ----
+    public static final RegistryObject<Item> BASEBALL_BAT = ITEMS.register("baseball_bat", BaseballBatItem::new);
+    public static final RegistryObject<Item> MACHETE = ITEMS.register("machete", MacheteItem::new);
+    public static final RegistryObject<Item> COMBAT_KNIFE = ITEMS.register("combat_knife", CombatKnifeItem::new);
+
+    // ---- Granaten ----
+    public static final RegistryObject<Item> FRAG_GRENADE = ITEMS.register("frag_grenade", FragGrenadeItem::new);
+    public static final RegistryObject<Item> SMOKE_GRENADE = ITEMS.register("smoke_grenade", SmokeGrenadeItem::new);
+    public static final RegistryObject<Item> FLASH_GRENADE = ITEMS.register("flash_grenade", FlashGrenadeItem::new);
+
+    // ---- Attachments ----
+    public static final RegistryObject<Item> SCOPE = ITEMS.register("scope", ScopeAttachment::new);
+    public static final RegistryObject<Item> SILENCER = ITEMS.register("silencer", SilencerAttachment::new);
+    public static final RegistryObject<Item> LASER = ITEMS.register("laser", LaserAttachment::new);
 }

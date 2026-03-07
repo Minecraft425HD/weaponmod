@@ -145,7 +145,7 @@ public abstract class GunItem extends Item {
         player.getCooldowns().addCooldown(this, getCurrentCooldown(gunStack));
     }
 
-    protected void shootProjectile(Level level, Player player, ItemStack gunStack) {
+    public void shootProjectile(Level level, Player player, ItemStack gunStack) {
         Item ammoType = getLoadedAmmoType(gunStack);
         Attachment attachment = getAttachment(gunStack);
 
@@ -171,7 +171,7 @@ public abstract class GunItem extends Item {
                 3.0F, 0F
         );
 
-        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAME_ARROWS, gunStack) > 0) {
+        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, gunStack) > 0) {
             bullet.setSecondsOnFire(100);
         }
 
@@ -213,9 +213,10 @@ public abstract class GunItem extends Item {
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack stack = player.getInventory().getItem(i);
             if (stack.getItem() == properties.getAmmoType()) {
+                Item loadedAmmo = stack.getItem();
                 stack.shrink(1);
                 setCurrentAmmo(gunStack, properties.getMaxAmmo());
-                setLoadedAmmoType(gunStack, ModItems.AMMO_STANDARD.get());
+                setLoadedAmmoType(gunStack, loadedAmmo);
                 player.playSound(ModSounds.RELOAD.get(), 1.0F, 1.0F);
                 return;
             }
@@ -227,7 +228,7 @@ public abstract class GunItem extends Item {
         return stack.getOrCreateTag().getInt(TAG_SHOTS_FIRED);
     }
 
-    private void addShotHistory(ItemStack stack) {
+    public void addShotHistory(ItemStack stack) {
         CompoundTag tag = stack.getOrCreateTag();
         int shots = tag.getInt(TAG_SHOTS_FIRED) + 1;
         tag.putInt(TAG_SHOTS_FIRED, shots);
@@ -277,8 +278,9 @@ public abstract class GunItem extends Item {
             default -> "";
         };
         tooltip.add(Component.literal("§7Modus: §e" + modeStr));
-        if (hasAttachment(stack)) {
-            tooltip.add(Component.literal("§7Zubehör: §d" + getAttachment(stack).getType().name()));
+        Attachment att = getAttachment(stack);
+        if (att != null) {
+            tooltip.add(Component.literal("§7Zubehör: §d" + att.getType().name()));
         }
         Item ammoType = getLoadedAmmoType(stack);
         tooltip.add(Component.literal("§7Geladene Munition: §b" + ammoType.getDescription().getString()));

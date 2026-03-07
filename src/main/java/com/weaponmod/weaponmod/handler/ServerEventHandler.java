@@ -9,7 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 
@@ -45,19 +45,21 @@ public class ServerEventHandler {
     }
 
     @SubscribeEvent
-    public void onLivingHurt(LivingHurtEvent event) {
+    public void onLivingDeath(LivingDeathEvent event) {
+        // Tode durch Kugeln (CustomBulletEntity extends AbstractArrow)
         if (event.getSource().getDirectEntity() instanceof AbstractArrow arrow && arrow.getOwner() instanceof Player player) {
-            if (!event.getEntity().isAlive()) {
-                ItemStack weapon = player.getMainHandItem();
-                if (weapon.getItem() instanceof GunItem) {
-                    if (weapon.getItem() == ModItems.PISTOL.get() || weapon.getItem() == ModItems.REVOLVER.get()) {
-                        SkillSystem.addXP(player, SkillSystem.SkillType.PISTOL, 10);
-                    } else {
-                        SkillSystem.addXP(player, SkillSystem.SkillType.RIFLE, 10);
-                    }
-                } else if (weapon.getItem() instanceof MeleeWeaponItem) {
-                    SkillSystem.addXP(player, SkillSystem.SkillType.MELEE, 10);
-                }
+            ItemStack weapon = player.getMainHandItem();
+            if (weapon.getItem() == ModItems.PISTOL.get() || weapon.getItem() == ModItems.REVOLVER.get()) {
+                SkillSystem.addXP(player, SkillSystem.SkillType.PISTOL, 10);
+            } else if (weapon.getItem() instanceof GunItem) {
+                SkillSystem.addXP(player, SkillSystem.SkillType.RIFLE, 10);
+            }
+        }
+        // Tode durch Nahkampf
+        if (event.getSource().getDirectEntity() instanceof Player player) {
+            ItemStack weapon = player.getMainHandItem();
+            if (weapon.getItem() instanceof MeleeWeaponItem) {
+                SkillSystem.addXP(player, SkillSystem.SkillType.MELEE, 10);
             }
         }
     }
