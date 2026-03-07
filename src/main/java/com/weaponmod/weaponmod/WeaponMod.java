@@ -1,13 +1,10 @@
 package com.weaponmod.weaponmod;
 
-import com.weaponmod.weaponmod.attachment.ModAttachments;
 import com.weaponmod.weaponmod.entity.ModEntities;
-import com.weaponmod.weaponmod.handler.ClientEventHandler;
 import com.weaponmod.weaponmod.handler.ServerEventHandler;
 import com.weaponmod.weaponmod.item.ModItems;
 import com.weaponmod.weaponmod.network.ModPackets;
 import com.weaponmod.weaponmod.particle.ModParticles;
-import com.weaponmod.weaponmod.skill.SkillSystem;
 import com.weaponmod.weaponmod.sound.ModSounds;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -33,9 +30,9 @@ public class WeaponMod {
 
         modEventBus.addListener(this::commonSetup);
 
+        // ServerEventHandler wird manuell registriert (keine @Mod.EventBusSubscriber Annotation)
         MinecraftForge.EVENT_BUS.register(new ServerEventHandler());
-        MinecraftForge.EVENT_BUS.register(new ClientEventHandler());
-        MinecraftForge.EVENT_BUS.register(SkillSystem.class);
+        // ClientEventHandler wird automatisch via @Mod.EventBusSubscriber registriert (nur auf Client-Seite)
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

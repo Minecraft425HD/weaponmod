@@ -14,7 +14,6 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -48,8 +47,8 @@ public class ClientEventHandler {
 
             int ammo = gun.getCurrentAmmo(mainHand);
             int maxAmmo = gun.getProperties().getMaxAmmo();
-            String ammoText = "🔫 " + ammo + "/" + maxAmmo;
-            graphics.drawString(mc.font, ammoText, w - 100, h - 50, 0xFFFFFF);
+            String ammoText = "Ammo: " + ammo + "/" + maxAmmo;
+            graphics.drawString(mc.font, ammoText, w - 110, h - 50, 0xFFFFFF);
 
             int mode = gun.getFireMode(mainHand);
             String modeText = switch (mode) {
@@ -58,7 +57,7 @@ public class ClientEventHandler {
                 case 2 -> "Auto";
                 default -> "";
             };
-            graphics.drawString(mc.font, "Mode: " + modeText, w - 100, h - 40, 0xFFFF55);
+            graphics.drawString(mc.font, "Mode: " + modeText, w - 110, h - 40, 0xFFFF55);
         }
     }
 
@@ -81,11 +80,17 @@ public class ClientEventHandler {
         poseStack.pushPose();
         poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
+        // RenderType.LINES benoetigt: position + color + normal
         VertexConsumer builder = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
-        LevelRenderer.renderLineBox(poseStack, builder, end.x - 0.1, end.y - 0.1, end.z - 0.1, end.x + 0.1, end.y + 0.1, end.z + 0.1, 1, 0, 0, 1);
-        LevelRenderer.renderLineBox(poseStack, builder, start.x - 0.05, start.y - 0.05, start.z - 0.05, start.x + 0.05, start.y + 0.05, start.z + 0.05, 0, 1, 0, 1);
-        builder.vertex(poseStack.last().pose(), (float) start.x, (float) start.y, (float) start.z).color(255, 0, 0, 255).endVertex();
-        builder.vertex(poseStack.last().pose(), (float) end.x, (float) end.y, (float) end.z).color(255, 0, 0, 255).endVertex();
+        builder.vertex(poseStack.last().pose(), (float) start.x, (float) start.y, (float) start.z)
+                .color(255, 0, 0, 255)
+                .normal(poseStack.last().normal(), 0, 1, 0)
+                .endVertex();
+        builder.vertex(poseStack.last().pose(), (float) end.x, (float) end.y, (float) end.z)
+                .color(255, 0, 0, 255)
+                .normal(poseStack.last().normal(), 0, 1, 0)
+                .endVertex();
+        mc.renderBuffers().bufferSource().endBatch(RenderType.LINES);
 
         poseStack.popPose();
     }

@@ -145,7 +145,7 @@ public abstract class GunItem extends Item {
         player.getCooldowns().addCooldown(this, getCurrentCooldown(gunStack));
     }
 
-    protected void shootProjectile(Level level, Player player, ItemStack gunStack) {
+    public void shootProjectile(Level level, Player player, ItemStack gunStack) {
         Item ammoType = getLoadedAmmoType(gunStack);
         Attachment attachment = getAttachment(gunStack);
 
@@ -227,7 +227,7 @@ public abstract class GunItem extends Item {
         return stack.getOrCreateTag().getInt(TAG_SHOTS_FIRED);
     }
 
-    private void addShotHistory(ItemStack stack) {
+    public void addShotHistory(ItemStack stack) {
         CompoundTag tag = stack.getOrCreateTag();
         int shots = tag.getInt(TAG_SHOTS_FIRED) + 1;
         tag.putInt(TAG_SHOTS_FIRED, shots);
