@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.weaponmod.weaponmod.WeaponMod;
 import com.weaponmod.weaponmod.attachment.Attachment;
 import com.weaponmod.weaponmod.gun.GunItem;
+import com.weaponmod.weaponmod.network.FireWeaponPacket;
 import com.weaponmod.weaponmod.network.ModPackets;
 import com.weaponmod.weaponmod.network.ReloadPacket;
 import com.weaponmod.weaponmod.network.StartAutoFirePacket;
@@ -124,16 +125,28 @@ public class ClientEventHandler {
             }
 
             long handle = mc.getWindow().getWindow();
-            boolean isRightDown = InputConstants.isKeyDown(handle, GLFW.GLFW_KEY_RIGHT) ||
-                    GLFW.glfwGetMouseButton(handle, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
-            if (isRightDown && gun.getFireMode(mainHand) == 2) {
-                if (!isMouseDown) {
-                    ModPackets.sendToServer(new StartAutoFirePacket(mc.player.getInventory().selected));
-                    isMouseDown = true;
+            boolean isLeftDown = GLFW.glfwGetMouseButton(handle, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
+            int fireMode = gun.getFireMode(mainHand);
+            if (isLeftDown) {
+                if (fireMode == 2) {
+                    // Auto: Dauerfeuer
+                    if (!isMouseDown) {
+                        ModPackets.sendToServer(new StartAutoFirePacket(mc.player.getInventory().selected));
+                        isMouseDown = true;
+                    }
+                } else {
+                    // Einzel / Burst: einmalig beim Drücken
+                    if (!isMouseDown) {
+                        int shots = fireMode == 1 ? 3 : 1;
+                        ModPackets.sendToServer(new FireWeaponPacket(mc.player.getInventory().selected, shots));
+                        isMouseDown = true;
+                    }
                 }
             } else {
                 if (isMouseDown) {
-                    ModPackets.sendToServer(new StopAutoFirePacket());
+                    if (fireMode == 2) {
+                        ModPackets.sendToServer(new StopAutoFirePacket());
+                    }
                     isMouseDown = false;
                 }
             }

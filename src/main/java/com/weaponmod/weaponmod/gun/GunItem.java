@@ -183,27 +183,7 @@ public abstract class GunItem extends Item {
             return InteractionResultHolder.success(gunStack);
         }
 
-        if (!level.isClientSide) {
-            if (!canShoot(gunStack, player)) {
-                return InteractionResultHolder.fail(gunStack);
-            }
-
-            int currentAmmo = getCurrentAmmo(gunStack);
-            if (currentAmmo <= 0 && !player.isCreative()) {
-                player.displayClientMessage(Component.literal("§cKeine Munition! [R] zum Nachladen"), true);
-                player.playSound(ModSounds.EMPTY_CLICK.get(), 1.0F, 1.0F);
-                return InteractionResultHolder.fail(gunStack);
-            }
-
-            int fireMode = getFireMode(gunStack);
-            if (fireMode == 2) {
-                performShots(level, player, gunStack, 1);
-            } else {
-                int shots = fireMode == 1 ? 3 : 1;
-                performShots(level, player, gunStack, shots);
-            }
-        }
-        return InteractionResultHolder.success(gunStack);
+        return InteractionResultHolder.pass(gunStack);
     }
 
     public void performShots(Level level, Player player, ItemStack gunStack, int count) {
@@ -236,7 +216,7 @@ public abstract class GunItem extends Item {
 
         // Erstes Attachment an die Bullet-Entity übergeben (für visuelle Effekte)
         Attachment firstAttachment = attachments.isEmpty() ? null : attachments.get(0);
-        CustomBulletEntity bullet = new CustomBulletEntity(level, player, baseDamage, ammoType, firstAttachment);
+        CustomBulletEntity bullet = new CustomBulletEntity(level, player, baseDamage, ammoType, firstAttachment, properties.getRange());
         double accuracy = getCurrentAccuracy(gunStack);
         int shotsFired = getShotsFired(gunStack);
         double spread = (1.0 - accuracy) * 0.1 * (1 + shotsFired * 0.1);

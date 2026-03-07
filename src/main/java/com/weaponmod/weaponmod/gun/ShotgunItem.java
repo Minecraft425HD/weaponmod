@@ -9,7 +9,7 @@ public class ShotgunItem extends GunItem {
     public ShotgunItem() {
         super(new GunProperties.Builder()
                 .durability(600).damage(4).accuracy(0.6).cooldown(25)
-                .maxAmmo(8).ammoType(ModItems.SHOTGUN_SHELLS.get()).usesMagazines(true).build());
+                .maxAmmo(8).ammoType(ModItems.SHOTGUN_SHELLS.get()).usesMagazines(true).range(30).build());
     }
 
     @Override

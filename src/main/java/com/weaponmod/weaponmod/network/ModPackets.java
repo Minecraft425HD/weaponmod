@@ -32,6 +32,11 @@ public class ModPackets {
                 ReloadPacket::encode,
                 ReloadPacket::decode,
                 ReloadPacket::handle);
+        INSTANCE.registerMessage(packetId++,
+                FireWeaponPacket.class,
+                FireWeaponPacket::encode,
+                FireWeaponPacket::decode,
+                FireWeaponPacket::handle);
     }
 
     public static void sendToServer(Object packet) {
