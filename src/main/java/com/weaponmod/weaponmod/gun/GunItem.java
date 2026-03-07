@@ -48,6 +48,11 @@ public abstract class GunItem extends Item {
         this.properties = properties;
     }
 
+    /** Gibt die effektive Reichweite zurueck. Subklassen ueberschreiben dies fuer Config-Werte. */
+    protected int getConfigRange() {
+        return properties.getRange();
+    }
+
     public int getCurrentAmmo(ItemStack stack) {
         return stack.getOrCreateTag().getInt(TAG_AMMO);
     }
@@ -216,7 +221,7 @@ public abstract class GunItem extends Item {
 
         // Erstes Attachment an die Bullet-Entity übergeben (für visuelle Effekte)
         Attachment firstAttachment = attachments.isEmpty() ? null : attachments.get(0);
-        CustomBulletEntity bullet = new CustomBulletEntity(level, player, baseDamage, ammoType, firstAttachment, properties.getRange());
+        CustomBulletEntity bullet = new CustomBulletEntity(level, player, baseDamage, ammoType, firstAttachment, getConfigRange());
         double accuracy = getCurrentAccuracy(gunStack);
         int shotsFired = getShotsFired(gunStack);
         double spread = (1.0 - accuracy) * 0.1 * (1 + shotsFired * 0.1);
