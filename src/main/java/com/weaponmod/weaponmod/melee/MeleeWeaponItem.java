@@ -18,7 +18,7 @@ public abstract class MeleeWeaponItem extends SwordItem {
                enchantment == Enchantments.BANE_OF_ARTHROPODS ||
                enchantment == Enchantments.KNOCKBACK ||
                enchantment == Enchantments.FIRE_ASPECT ||
-               enchantment == Enchantments.LOOTING ||
+               enchantment == Enchantments.MOB_LOOTING ||
                enchantment == Enchantments.UNBREAKING ||
                enchantment == Enchantments.MENDING;
     }

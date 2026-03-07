@@ -93,13 +93,13 @@ public class ThrownGrenade extends ThrowableItemProjectile {
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("GrenadeType", entityData.get(GRENADE_TYPE));
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         entityData.set(GRENADE_TYPE, tag.getInt("GrenadeType"));
     }

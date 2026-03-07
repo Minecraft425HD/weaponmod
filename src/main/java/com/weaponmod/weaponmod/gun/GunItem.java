@@ -171,7 +171,7 @@ public abstract class GunItem extends Item {
                 3.0F, 0F
         );
 
-        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAME_ARROWS, gunStack) > 0) {
+        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, gunStack) > 0) {
             bullet.setSecondsOnFire(100);
         }
 
