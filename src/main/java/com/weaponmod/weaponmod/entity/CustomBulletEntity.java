@@ -69,7 +69,8 @@ public class CustomBulletEntity extends AbstractArrow {
                 damage *= 0.3;
             }
 
-            living.hurt(living.damageSources().arrow(this, (LivingEntity) this.getOwner()), damage);
+            Entity owner = this.getOwner();
+            living.hurt(living.damageSources().arrow(this, owner instanceof LivingEntity le ? le : null), damage);
 
             if (this.level() instanceof ServerLevel server) {
                 server.sendParticles(ModParticles.BLOOD.get(), living.getX(), living.getY() + 1, living.getZ(),
