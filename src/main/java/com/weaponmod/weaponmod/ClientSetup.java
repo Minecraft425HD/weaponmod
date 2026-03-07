@@ -1,5 +1,6 @@
 package com.weaponmod.weaponmod;
 
+import com.weaponmod.weaponmod.entity.CustomBulletEntity;
 import com.weaponmod.weaponmod.entity.ModEntities;
 import com.weaponmod.weaponmod.particle.ModParticles;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -7,9 +8,11 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TextureSheetParticle;
-import net.minecraft.client.renderer.entity.NoRenderer;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
@@ -22,13 +25,23 @@ public class ClientSetup {
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.THROWN_GRENADE.get(), ThrownItemRenderer::new);
-        event.registerEntityRenderer(ModEntities.CUSTOM_BULLET.get(), NoRenderer::new);
+        event.registerEntityRenderer(ModEntities.CUSTOM_BULLET.get(), BulletRenderer::new);
     }
 
     @SubscribeEvent
     public static void onRegisterParticles(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ModParticles.MUZZLE_FLASH.get(), MuzzleFlashParticle.Provider::new);
         event.registerSpriteSet(ModParticles.BLOOD.get(), BloodParticle.Provider::new);
+    }
+
+    // Unsichtbarer Renderer fuer CustomBulletEntity (NoRenderer existiert nicht in 1.20.1)
+    static class BulletRenderer extends EntityRenderer<CustomBulletEntity> {
+        BulletRenderer(EntityRendererProvider.Context ctx) { super(ctx); }
+
+        @Override
+        public ResourceLocation getTextureLocation(CustomBulletEntity entity) {
+            return new ResourceLocation("textures/misc/unknown_server.png");
+        }
     }
 
     // Einfacher Muzzle-Flash-Partikel (nutzt die registrierten Sprites)
