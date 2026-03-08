@@ -22,7 +22,7 @@ public class ModEntities {
     public static final RegistryObject<EntityType<CustomBulletEntity>> CUSTOM_BULLET = ENTITIES.register("custom_bullet",
             () -> EntityType.Builder.<CustomBulletEntity>of(CustomBulletEntity::new, MobCategory.MISC)
                     .sized(0.1F, 0.1F)
-                    .clientTrackingRange(4)
-                    .updateInterval(20)
+                    .clientTrackingRange(32)
+                    .updateInterval(1)
                     .build(new ResourceLocation(WeaponMod.MOD_ID, "custom_bullet").toString()));
 }

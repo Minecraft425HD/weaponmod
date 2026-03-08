@@ -1,5 +1,6 @@
 package com.weaponmod.weaponmod;
 
+import com.weaponmod.weaponmod.config.WeaponModConfig;
 import com.weaponmod.weaponmod.entity.ModEntities;
 import com.weaponmod.weaponmod.handler.ServerEventHandler;
 import com.weaponmod.weaponmod.item.ModItems;
@@ -8,7 +9,9 @@ import com.weaponmod.weaponmod.particle.ModParticles;
 import com.weaponmod.weaponmod.sound.ModSounds;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
@@ -20,6 +23,8 @@ public class WeaponMod {
     public static final Logger LOGGER = LogManager.getLogger();
 
     public WeaponMod() {
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, WeaponModConfig.SPEC);
+
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         ModItems.ITEMS.register(modEventBus);
