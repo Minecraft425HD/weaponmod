@@ -3,7 +3,7 @@ package com.weaponmod.weaponmod;
 import com.weaponmod.weaponmod.client.WeaponModConfigScreen;
 import com.weaponmod.weaponmod.entity.ModEntities;
 import com.weaponmod.weaponmod.particle.ModParticles;
-import com.weaponmod.weaponmod.render.BulletBeamRenderer;
+import com.weaponmod.weaponmod.render.BulletModelRenderer;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
@@ -37,7 +37,7 @@ public class ClientSetup {
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.THROWN_GRENADE.get(), ThrownItemRenderer::new);
-        event.registerEntityRenderer(ModEntities.CUSTOM_BULLET.get(), BulletBeamRenderer::new);
+        event.registerEntityRenderer(ModEntities.CUSTOM_BULLET.get(), BulletModelRenderer::new);
     }
 
     @SubscribeEvent

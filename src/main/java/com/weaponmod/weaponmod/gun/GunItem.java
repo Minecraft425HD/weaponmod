@@ -245,10 +245,6 @@ public abstract class GunItem extends Item {
         level.playSound(null, player.getX(), player.getY(), player.getZ(),
                 ModSounds.GUN_SHOT.get(), SoundSource.PLAYERS, volume, 1.0F);
 
-        if (level instanceof ServerLevel server) {
-            Vec3 pos = player.getEyePosition().add(player.getLookAngle().scale(1.2));
-            server.sendParticles(ModParticles.MUZZLE_FLASH.get(), pos.x, pos.y, pos.z, 1, 0, 0, 0, 0);
-        }
     }
 
     public boolean canShoot(ItemStack stack, Player player) {
