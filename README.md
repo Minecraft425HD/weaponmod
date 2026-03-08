@@ -141,22 +141,6 @@ Each magazine type is available in four variants:
 
 ---
 
-### Skill System
-
-Each weapon category tracks experience points (XP) independently:
-
-| Skill Type | Weapons                                   |
-|------------|-------------------------------------------|
-| Pistol     | Pistol, Revolver                          |
-| Rifle      | AK47, MP5, Shotgun, Sniper Rifle          |
-| Melee      | Baseball Bat, Machete, Combat Knife       |
-
-**Progression:**
-- Gain **10 XP** per kill with a weapon of the respective type.
-- Every **100 XP** increases your passive damage multiplier by **+5%** for that skill type.
-
----
-
 ### Fire Modes
 
 Each firearm supports three fire modes:
@@ -182,13 +166,14 @@ Toggle fire modes with **Shift + Right-Click**.
 
 ## Controls
 
-| Action           | Default Key / Button        |
-|------------------|-----------------------------|
-| Fire             | Right-Click                 |
-| Reload           | R (configurable)            |
-| Switch Fire Mode | Shift + Right-Click         |
-| Throw Grenade    | Right-Click (grenade item)  |
-| Apply Attachment | Craft/use attachment item on gun |
+| Action                  | Default Key / Button                                    |
+|-------------------------|---------------------------------------------------------|
+| Fire                    | Right-Click                                             |
+| Reload                  | R (short press, < 300 ms)                               |
+| Select Ammo Type        | Hold R (> 300 ms) → scroll wheel to cycle → release R  |
+| Switch Fire Mode        | Shift + Right-Click                                     |
+| Throw Grenade           | Right-Click (grenade item)                              |
+| Apply Attachment        | Right-Click attachment item onto gun in inventory       |
 
 ---
 

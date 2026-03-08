@@ -9,6 +9,7 @@ import com.weaponmod.weaponmod.gun.GunItem;
 import com.weaponmod.weaponmod.network.FireWeaponPacket;
 import com.weaponmod.weaponmod.network.ModPackets;
 import com.weaponmod.weaponmod.network.ReloadPacket;
+import com.weaponmod.weaponmod.network.SetAmmoTypePacket;
 import com.weaponmod.weaponmod.network.StartAutoFirePacket;
 import com.weaponmod.weaponmod.network.StopAutoFirePacket;
 import net.minecraft.client.Camera;
@@ -16,6 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -33,6 +35,19 @@ import org.lwjgl.glfw.GLFW;
 public class ClientEventHandler {
     private static boolean isScopeZoomed = false;
     private static boolean isMouseDown = false;
+
+    // R-Taste Zustand
+    private static boolean rIsDown = false;
+    private static long rPressTime = 0L;
+    private static boolean isAmmoSelectActive = false;
+    private static int selectedAmmoIndex = 0;
+
+    private static final String[] AMMO_NAMES = {
+        "Standard-Munition",
+        "Panzerbrechende Munition",
+        "Leuchtspurmunition",
+        "Gummigeschosse"
+    };
 
     @SubscribeEvent
     public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Post event) {
@@ -59,6 +74,42 @@ public class ClientEventHandler {
                 default -> "";
             };
             graphics.drawString(mc.font, "Mode: " + modeText, w - 110, h - 40, 0xFFFF55);
+
+            if (isAmmoSelectActive) {
+                renderAmmoSelectionOverlay(graphics, mc, w, h);
+            }
+        }
+    }
+
+    private static void renderAmmoSelectionOverlay(GuiGraphics graphics, Minecraft mc, int w, int h) {
+        int panelWidth  = 170;
+        int entryHeight = 14;
+        int padding     = 4;
+        int panelHeight = padding * 2 + entryHeight * 4 + padding * 3;
+        int panelX = w - panelWidth - 12;
+        int panelY = h / 2 - panelHeight / 2;
+
+        // Semi-transparenter Hintergrund
+        graphics.fill(panelX - 2, panelY - 14,
+                      panelX + panelWidth + 2, panelY + panelHeight + 2,
+                      0xAA000000);
+
+        // Überschrift
+        graphics.drawString(mc.font, "Munitionstyp", panelX + 4, panelY - 10, 0xFFCCCCCC);
+
+        for (int i = 0; i < 4; i++) {
+            int entryY = panelY + padding + i * (entryHeight + padding);
+            boolean selected = (i == selectedAmmoIndex);
+
+            if (selected) {
+                graphics.fill(panelX, entryY - 1,
+                              panelX + panelWidth, entryY + entryHeight - 1,
+                              0x88FFAA00);
+            }
+
+            int textColor = selected ? 0xFFFFAA00 : 0xFFFFFFFF;
+            String prefix = selected ? "> " : "  ";
+            graphics.drawString(mc.font, prefix + AMMO_NAMES[i], panelX + 4, entryY + 2, textColor);
         }
     }
 
@@ -83,7 +134,6 @@ public class ClientEventHandler {
         poseStack.pushPose();
         poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
-        // RenderType.LINES benoetigt: position + color + normal
         VertexConsumer builder = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
         builder.vertex(poseStack.last().pose(), (float) start.x, (float) start.y, (float) start.z)
                 .color(255, 0, 0, 255)
@@ -102,6 +152,21 @@ public class ClientEventHandler {
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
+
+        // R-Halte-Timer: Overlay aktivieren nach 300ms
+        if (rIsDown && !isAmmoSelectActive) {
+            if (System.currentTimeMillis() - rPressTime >= 300L) {
+                isAmmoSelectActive = true;
+            }
+        }
+        // Overlay abbrechen wenn Screen offen oder keine Waffe in der Hand
+        if (isAmmoSelectActive) {
+            if (mc.screen != null || !(mc.player.getMainHandItem().getItem() instanceof GunItem)) {
+                rIsDown = false;
+                isAmmoSelectActive = false;
+            }
+        }
+
         LocalPlayer player = mc.player;
         ItemStack mainHand = player.getMainHandItem();
         if (mainHand.getItem() instanceof GunItem gun) {
@@ -129,13 +194,11 @@ public class ClientEventHandler {
             int fireMode = gun.getFireMode(mainHand);
             if (isLeftDown) {
                 if (fireMode == 2) {
-                    // Auto: Dauerfeuer
                     if (!isMouseDown) {
                         ModPackets.sendToServer(new StartAutoFirePacket(mc.player.getInventory().selected));
                         isMouseDown = true;
                     }
                 } else {
-                    // Einzel / Burst: einmalig beim Drücken
                     if (!isMouseDown) {
                         int shots = fireMode == 1 ? 3 : 1;
                         ModPackets.sendToServer(new FireWeaponPacket(mc.player.getInventory().selected, shots));
@@ -164,8 +227,49 @@ public class ClientEventHandler {
 
     @SubscribeEvent
     public static void onKeyInput(InputEvent.Key event) {
-        if (event.getAction() == GLFW.GLFW_PRESS && event.getKey() == GLFW.GLFW_KEY_R) {
-            ModPackets.sendToServer(new ReloadPacket());
+        if (event.getKey() != GLFW.GLFW_KEY_R) return;
+
+        if (event.getAction() == GLFW.GLFW_PRESS) {
+            rIsDown = true;
+            rPressTime = System.currentTimeMillis();
+            // Aktuellen Munitionstyp als Startauswahl setzen
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player != null) {
+                ItemStack mainHand = mc.player.getMainHandItem();
+                if (mainHand.getItem() instanceof GunItem gun) {
+                    Item loaded = gun.getLoadedAmmoType(mainHand);
+                    selectedAmmoIndex = ammoItemToIndex(loaded);
+                }
+            }
+        } else if (event.getAction() == GLFW.GLFW_RELEASE) {
+            if (isAmmoSelectActive) {
+                // Munitionstyp bestätigen
+                ModPackets.sendToServer(new SetAmmoTypePacket(selectedAmmoIndex));
+            } else if (System.currentTimeMillis() - rPressTime < 300L) {
+                // Kurzer Druck: Nachladen
+                ModPackets.sendToServer(new ReloadPacket());
+            }
+            rIsDown = false;
+            isAmmoSelectActive = false;
         }
+        // GLFW_REPEAT für R ignorieren
+    }
+
+    @SubscribeEvent
+    public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {
+        if (!isAmmoSelectActive) return;
+        event.setCanceled(true);
+        if (event.getScrollDelta() > 0) {
+            selectedAmmoIndex = (selectedAmmoIndex + 1) % 4;
+        } else {
+            selectedAmmoIndex = (selectedAmmoIndex + 3) % 4;
+        }
+    }
+
+    private static int ammoItemToIndex(Item item) {
+        if (item == SetAmmoTypePacket.AMMO_TYPES.get(1).get()) return 1;
+        if (item == SetAmmoTypePacket.AMMO_TYPES.get(2).get()) return 2;
+        if (item == SetAmmoTypePacket.AMMO_TYPES.get(3).get()) return 3;
+        return 0;
     }
 }

@@ -6,7 +6,6 @@ import com.weaponmod.weaponmod.attachment.ModAttachments;
 import com.weaponmod.weaponmod.entity.CustomBulletEntity;
 import com.weaponmod.weaponmod.item.ModItems;
 import com.weaponmod.weaponmod.particle.ModParticles;
-import com.weaponmod.weaponmod.skill.SkillSystem;
 import com.weaponmod.weaponmod.sound.ModSounds;
 import com.weaponmod.weaponmod.util.ModNBT;
 import net.minecraft.nbt.CompoundTag;
@@ -214,10 +213,6 @@ public abstract class GunItem extends Item {
         if (ammoType == ModItems.AMMO_AP.get()) baseDamage *= 0.8;
         else if (ammoType == ModItems.AMMO_RUBBER.get()) baseDamage *= 0.3;
         for (Attachment a : attachments) baseDamage *= a.getDamageMultiplier();
-
-        baseDamage = SkillSystem.modifyDamage(player,
-                this instanceof PistolItem || this instanceof RevolverItem ? SkillSystem.SkillType.PISTOL : SkillSystem.SkillType.RIFLE,
-                baseDamage);
 
         // Erstes Attachment an die Bullet-Entity übergeben (für visuelle Effekte)
         Attachment firstAttachment = attachments.isEmpty() ? null : attachments.get(0);
