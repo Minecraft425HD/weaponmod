@@ -218,8 +218,14 @@ public abstract class GunItem extends Item {
         Attachment firstAttachment = attachments.isEmpty() ? null : attachments.get(0);
         CustomBulletEntity bullet = new CustomBulletEntity(level, player, baseDamage, ammoType, firstAttachment, getConfigRange());
         double accuracy = getCurrentAccuracy(gunStack);
-        int shotsFired = getShotsFired(gunStack);
-        double spread = (1.0 - accuracy) * 0.1 * (1 + shotsFired * 0.1);
+        double spread;
+        if (getFireMode(gunStack) == 0) {
+            // Einzelschuss: kein Spray-Aufbau
+            spread = (1.0 - accuracy) * 0.1;
+        } else {
+            int shotsFired = getShotsFired(gunStack);
+            spread = (1.0 - accuracy) * 0.1 * (1 + shotsFired * 0.1);
+        }
 
         Vec3 lookVec = player.getLookAngle();
         bullet.shoot(
