@@ -8,7 +8,4 @@ public class ModNBT {
     public static final String ATTACHMENT_SOUND = "AttachmentSound";
     public static final String AUTO_FIRE_ACTIVE = "AutoFireActive";
     public static final String AUTO_FIRE_GUN_SLOT = "AutoFireGunSlot";
-    public static final String SKILL_PISTOL_XP = "SkillPistolXP";
-    public static final String SKILL_RIFLE_XP = "SkillRifleXP";
-    public static final String SKILL_MELEE_XP = "SkillMeleeXP";
 }

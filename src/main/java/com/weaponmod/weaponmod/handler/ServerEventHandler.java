@@ -1,15 +1,11 @@
 package com.weaponmod.weaponmod.handler;
 
 import com.weaponmod.weaponmod.gun.GunItem;
-import com.weaponmod.weaponmod.item.ModItems;
-import com.weaponmod.weaponmod.melee.MeleeWeaponItem;
-import com.weaponmod.weaponmod.skill.SkillSystem;
 import com.weaponmod.weaponmod.util.ModNBT;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 
@@ -45,22 +41,9 @@ public class ServerEventHandler {
     }
 
     @SubscribeEvent
-    public void onLivingDeath(LivingDeathEvent event) {
-        // Tode durch Kugeln (CustomBulletEntity extends AbstractArrow)
-        if (event.getSource().getDirectEntity() instanceof AbstractArrow arrow && arrow.getOwner() instanceof Player player) {
-            ItemStack weapon = player.getMainHandItem();
-            if (weapon.getItem() == ModItems.PISTOL.get() || weapon.getItem() == ModItems.REVOLVER.get()) {
-                SkillSystem.addXP(player, SkillSystem.SkillType.PISTOL, 10);
-            } else if (weapon.getItem() instanceof GunItem) {
-                SkillSystem.addXP(player, SkillSystem.SkillType.RIFLE, 10);
-            }
-        }
-        // Tode durch Nahkampf
-        if (event.getSource().getDirectEntity() instanceof Player player) {
-            ItemStack weapon = player.getMainHandItem();
-            if (weapon.getItem() instanceof MeleeWeaponItem) {
-                SkillSystem.addXP(player, SkillSystem.SkillType.MELEE, 10);
-            }
+    public void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+        if (event.getEntity().getMainHandItem().getItem() instanceof GunItem) {
+            event.setCanceled(true);
         }
     }
 }

@@ -6,7 +6,6 @@ import com.weaponmod.weaponmod.attachment.ModAttachments;
 import com.weaponmod.weaponmod.entity.CustomBulletEntity;
 import com.weaponmod.weaponmod.item.ModItems;
 import com.weaponmod.weaponmod.particle.ModParticles;
-import com.weaponmod.weaponmod.skill.SkillSystem;
 import com.weaponmod.weaponmod.sound.ModSounds;
 import com.weaponmod.weaponmod.util.ModNBT;
 import net.minecraft.nbt.CompoundTag;
@@ -215,16 +214,18 @@ public abstract class GunItem extends Item {
         else if (ammoType == ModItems.AMMO_RUBBER.get()) baseDamage *= 0.3;
         for (Attachment a : attachments) baseDamage *= a.getDamageMultiplier();
 
-        baseDamage = SkillSystem.modifyDamage(player,
-                this instanceof PistolItem || this instanceof RevolverItem ? SkillSystem.SkillType.PISTOL : SkillSystem.SkillType.RIFLE,
-                baseDamage);
-
         // Erstes Attachment an die Bullet-Entity übergeben (für visuelle Effekte)
         Attachment firstAttachment = attachments.isEmpty() ? null : attachments.get(0);
         CustomBulletEntity bullet = new CustomBulletEntity(level, player, baseDamage, ammoType, firstAttachment, getConfigRange());
         double accuracy = getCurrentAccuracy(gunStack);
-        int shotsFired = getShotsFired(gunStack);
-        double spread = (1.0 - accuracy) * 0.1 * (1 + shotsFired * 0.1);
+        double spread;
+        if (getFireMode(gunStack) == 0) {
+            // Einzelschuss: kein Spray-Aufbau
+            spread = (1.0 - accuracy) * 0.1;
+        } else {
+            int shotsFired = getShotsFired(gunStack);
+            spread = (1.0 - accuracy) * 0.1 * (1 + shotsFired * 0.1);
+        }
 
         Vec3 lookVec = player.getLookAngle();
         bullet.shoot(
