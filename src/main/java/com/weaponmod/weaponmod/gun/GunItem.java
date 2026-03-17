@@ -268,6 +268,7 @@ public abstract class GunItem extends Item {
     }
 
     public void performShots(Level level, Player player, ItemStack gunStack, int count) {
+        if (player.getCooldowns().isOnCooldown(this)) return;
         for (int i = 0; i < count; i++) {
             if (!canShoot(gunStack, player)) break;
             if (!player.isCreative()) {

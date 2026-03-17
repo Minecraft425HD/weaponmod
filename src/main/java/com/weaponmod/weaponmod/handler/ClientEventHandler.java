@@ -201,9 +201,11 @@ public class ClientEventHandler {
                     }
                 } else {
                     if (!isMouseDown) {
-                        int shots = fireMode == 1 ? 3 : 1;
-                        ModPackets.sendToServer(new FireWeaponPacket(mc.player.getInventory().selected, shots));
                         isMouseDown = true;
+                        if (!mc.player.getCooldowns().isOnCooldown(gun)) {
+                            int shots = fireMode == 1 ? 3 : 1;
+                            ModPackets.sendToServer(new FireWeaponPacket(mc.player.getInventory().selected, shots));
+                        }
                     }
                 }
             } else {
