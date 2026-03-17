@@ -76,6 +76,15 @@ public class ClientEventHandler {
             };
             graphics.drawString(mc.font, "Mode: " + modeText, w - 110, h - 40, 0xFFFF55);
 
+            float cooldown = player.getCooldowns().getCooldownPercent(gun, event.getPartialTick());
+            if (cooldown > 0f) {
+                int barWidth = 80;
+                int barX = w - 110;
+                int barY = h - 28;
+                graphics.fill(barX - 1, barY - 1, barX + barWidth + 1, barY + 5, 0x88000000);
+                graphics.fill(barX, barY, barX + (int)(barWidth * cooldown), barY + 4, 0xFFFF4422);
+            }
+
             if (isAmmoSelectActive) {
                 renderAmmoSelectionOverlay(graphics, mc, w, h);
             }
