@@ -2,6 +2,7 @@ package com.weaponmod.weaponmod.gun;
 
 import com.weaponmod.weaponmod.config.WeaponModConfig;
 import com.weaponmod.weaponmod.item.ModItems;
+import java.util.Set;
 
 public class Mp5Item extends GunItem {
     public Mp5Item() {
@@ -13,5 +14,10 @@ public class Mp5Item extends GunItem {
     @Override
     protected int getConfigRange() {
         return WeaponModConfig.MP5_RANGE.get();
+    }
+
+    @Override
+    public Set<Integer> getCompatibleFireModes() {
+        return Set.of(0, 1, 2); // Single, Burst, and Full-Auto
     }
 }

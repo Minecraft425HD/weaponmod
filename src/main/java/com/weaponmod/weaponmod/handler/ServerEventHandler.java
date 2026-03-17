@@ -17,19 +17,18 @@ public class ServerEventHandler {
             Player player = event.player;
             if (player.getPersistentData().getBoolean(ModNBT.AUTO_FIRE_ACTIVE)) {
                 int slot = player.getPersistentData().getInt(ModNBT.AUTO_FIRE_GUN_SLOT);
+                if (slot != -1 && (slot < 0 || slot >= player.getInventory().getContainerSize())) {
+                    player.getPersistentData().remove(ModNBT.AUTO_FIRE_ACTIVE);
+                    return;
+                }
                 ItemStack gunStack = slot == -1 ? player.getOffhandItem() : player.getInventory().getItem(slot);
                 if (gunStack.getItem() instanceof GunItem gun && gun.getFireMode(gunStack) == 2) {
                     if (gun.canShoot(gunStack, player)) {
-                        int ammo = gun.getCurrentAmmo(gunStack);
-                        if (ammo > 0 || player.isCreative()) {
-                            if (!player.isCreative()) {
-                                gun.setCurrentAmmo(gunStack, ammo - 1);
-                            }
-                            gun.shootProjectile(player.level(), player, gunStack);
-                            gun.addShotHistory(gunStack);
-                        } else {
-                            player.getPersistentData().remove(ModNBT.AUTO_FIRE_ACTIVE);
+                        if (!player.isCreative()) {
+                            gun.setCurrentAmmo(gunStack, gun.getCurrentAmmo(gunStack) - 1);
                         }
+                        gun.shootProjectile(player.level(), player, gunStack);
+                        gun.addShotHistory(gunStack, player.level());
                     } else {
                         player.getPersistentData().remove(ModNBT.AUTO_FIRE_ACTIVE);
                     }

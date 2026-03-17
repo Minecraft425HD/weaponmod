@@ -2,6 +2,7 @@ package com.weaponmod.weaponmod.gun;
 
 import com.weaponmod.weaponmod.config.WeaponModConfig;
 import com.weaponmod.weaponmod.item.ModItems;
+import java.util.Set;
 
 public class Ak47Item extends GunItem {
     public Ak47Item() {
@@ -13,5 +14,10 @@ public class Ak47Item extends GunItem {
     @Override
     protected int getConfigRange() {
         return WeaponModConfig.AK47_RANGE.get();
+    }
+
+    @Override
+    public Set<Integer> getCompatibleFireModes() {
+        return Set.of(0, 2); // Single and Full-Auto
     }
 }
