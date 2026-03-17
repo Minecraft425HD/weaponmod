@@ -87,7 +87,7 @@ public abstract class GunItem extends Item {
         int current = getFireMode(stack);
         int unlocked = getUnlockedModes(stack);
 
-        for (int i = 1; i <= 3; i++) {
+        for (int i = 1; i <= 2; i++) {
             int next = (current + i) % 3;
             if ((unlocked & (1 << next)) != 0) {
                 stack.getOrCreateTag().putInt(TAG_FIRE_MODE, next);
