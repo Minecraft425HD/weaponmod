@@ -29,6 +29,8 @@ import org.jetbrains.annotations.Nullable;
 
 import com.weaponmod.weaponmod.upgrade.BaseFireModeUpgradeItem;
 import com.weaponmod.weaponmod.upgrade.FireModeUpgradeType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -62,7 +64,7 @@ public abstract class GunItem extends Item {
     }
 
     public void setCurrentAmmo(ItemStack stack, int ammo) {
-        stack.getOrCreateTag().putInt(TAG_AMMO, Math.min(ammo, properties.getMaxAmmo()));
+        stack.getOrCreateTag().putInt(TAG_AMMO, Math.max(0, Math.min(ammo, properties.getMaxAmmo())));
     }
 
     public int getFireMode(ItemStack stack) {
@@ -239,15 +241,16 @@ public abstract class GunItem extends Item {
     public Item getLoadedAmmoType(ItemStack gunStack) {
         if (!gunStack.hasTag() || !gunStack.getTag().contains(TAG_AMMO_TYPE))
             return ModItems.AMMO_STANDARD.get();
-        String ammoName = gunStack.getTag().getString(TAG_AMMO_TYPE);
-        return ModItems.ITEMS.getEntries().stream()
-                .map(reg -> reg.get())
-                .filter(item -> item.getDescriptionId().equals(ammoName))
-                .findFirst().orElse(ModItems.AMMO_STANDARD.get());
+        String ammoKey = gunStack.getTag().getString(TAG_AMMO_TYPE);
+        Item found = ForgeRegistries.ITEMS.getValue(new ResourceLocation(ammoKey));
+        return found != null ? found : ModItems.AMMO_STANDARD.get();
     }
 
     public void setLoadedAmmoType(ItemStack gunStack, Item ammoItem) {
-        gunStack.getOrCreateTag().putString(TAG_AMMO_TYPE, ammoItem.getDescriptionId());
+        ResourceLocation key = ForgeRegistries.ITEMS.getKey(ammoItem);
+        if (key != null) {
+            gunStack.getOrCreateTag().putString(TAG_AMMO_TYPE, key.toString());
+        }
     }
 
     @Override
@@ -273,7 +276,7 @@ public abstract class GunItem extends Item {
                 setCurrentAmmo(gunStack, currentAmmo - 1);
             }
             shootProjectile(level, player, gunStack);
-            addShotHistory(gunStack);
+            addShotHistory(gunStack, level);
             applyRecoil(player);
         }
         player.getCooldowns().addCooldown(this, getCurrentCooldown(gunStack));
@@ -291,7 +294,7 @@ public abstract class GunItem extends Item {
         // Erstes Attachment an die Bullet-Entity übergeben (für visuelle Effekte)
         Attachment firstAttachment = attachments.isEmpty() ? null : attachments.get(0);
         CustomBulletEntity bullet = new CustomBulletEntity(level, player, baseDamage, ammoType, firstAttachment, getConfigRange());
-        double accuracy = getCurrentAccuracy(gunStack);
+        double accuracy = getCurrentAccuracy(gunStack, level);
         double spread;
         if (getFireMode(gunStack) == 0) {
             // Einzelschuss: kein Spray-Aufbau
@@ -362,24 +365,26 @@ public abstract class GunItem extends Item {
         return stack.getOrCreateTag().getInt(TAG_SHOTS_FIRED);
     }
 
-    public void addShotHistory(ItemStack stack) {
+    public void addShotHistory(ItemStack stack, Level level) {
         CompoundTag tag = stack.getOrCreateTag();
-        int shots = tag.getInt(TAG_SHOTS_FIRED) + 1;
+        int shots = Math.min(tag.getInt(TAG_SHOTS_FIRED) + 1, 1000);
         tag.putInt(TAG_SHOTS_FIRED, shots);
-        tag.putLong(TAG_LAST_SHOT_TIME, System.currentTimeMillis());
+        tag.putLong(TAG_LAST_SHOT_TIME, level.getGameTime());
     }
 
     public void resetShotHistory(ItemStack stack) {
         stack.getOrCreateTag().putInt(TAG_SHOTS_FIRED, 0);
     }
 
-    protected double getCurrentAccuracy(ItemStack stack) {
+    protected double getCurrentAccuracy(ItemStack stack, Level level) {
         double accuracy = properties.getBaseAccuracy();
         for (Attachment a : getAttachments(stack)) accuracy *= a.getAccuracyMultiplier();
         int shots = getShotsFired(stack);
         long last = stack.getOrCreateTag().getLong(TAG_LAST_SHOT_TIME);
-        long now = System.currentTimeMillis();
-        if (now - last > 2000) {
+        long now = level.getGameTime();
+        long elapsed = now - last;
+        // elapsed < 0 handles migration from old saves that stored ms timestamps
+        if (elapsed < 0 || elapsed > 40) {
             resetShotHistory(stack);
         } else {
             accuracy *= Math.max(0.5, 1.0 - shots * 0.05);
