@@ -37,6 +37,16 @@ public class ClientEventHandler {
     private static boolean isScopeZoomed = false;
     private static boolean isMouseDown = false;
 
+    // Lokales Cooldown-Tracking (verhindert Vanilla-Overlay und 1-Tick-Lücke)
+    private static long lastFireMs = 0L;
+    private static long cooldownMs = 0L;
+
+    private static float localCooldownPercent() {
+        if (cooldownMs <= 0) return 0f;
+        float f = 1f - (float)(System.currentTimeMillis() - lastFireMs) / cooldownMs;
+        return Math.max(0f, f);
+    }
+
     // R-Taste Zustand
     private static boolean rIsDown = false;
     private static long rPressTime = 0L;
@@ -76,7 +86,7 @@ public class ClientEventHandler {
             };
             graphics.drawString(mc.font, "Mode: " + modeText, w - 110, h - 40, 0xFFFF55);
 
-            float cooldown = player.getCooldowns().getCooldownPercent(gun, event.getPartialTick());
+            float cooldown = localCooldownPercent();
             if (cooldown > 0f) {
                 int barWidth = 80;
                 int barX = w - 110;
@@ -200,7 +210,8 @@ public class ClientEventHandler {
             }
 
             long handle = mc.getWindow().getWindow();
-            boolean isLeftDown = GLFW.glfwGetMouseButton(handle, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
+            boolean isLeftDown = mc.screen == null
+                    && GLFW.glfwGetMouseButton(handle, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
             int fireMode = gun.getFireMode(mainHand);
             if (isLeftDown) {
                 if (fireMode == 2) {
@@ -211,9 +222,11 @@ public class ClientEventHandler {
                 } else {
                     if (!isMouseDown) {
                         isMouseDown = true;
-                        if (!mc.player.getCooldowns().isOnCooldown(gun)) {
+                        if (localCooldownPercent() == 0f) {
                             int shots = fireMode == 1 ? 3 : 1;
                             ModPackets.sendToServer(new FireWeaponPacket(mc.player.getInventory().selected, shots));
+                            lastFireMs = System.currentTimeMillis();
+                            cooldownMs = gun.getCurrentCooldown(mainHand) * 50L;
                         }
                     }
                 }

@@ -48,6 +48,7 @@ public abstract class GunItem extends Item {
     private static final String TAG_AMMO_TYPE = "AmmoType";
     private static final String TAG_UNLOCKED_MODES = "UnlockedModes";
     private static final String TAG_SINGLE_PRECISION = "SinglePrecisionUpgrade";
+    private static final String TAG_LAST_FIRE_TIME = "LastFireTime";
 
     public GunItem(GunProperties properties) {
         super(new Item.Properties().stacksTo(1).durability(properties.getDurability()));
@@ -267,8 +268,13 @@ public abstract class GunItem extends Item {
         return InteractionResultHolder.pass(gunStack);
     }
 
+    public boolean isOnCooldown(ItemStack stack, Level level) {
+        long lastFire = stack.getOrCreateTag().getLong(TAG_LAST_FIRE_TIME);
+        return level.getGameTime() - lastFire < getCurrentCooldown(stack);
+    }
+
     public void performShots(Level level, Player player, ItemStack gunStack, int count) {
-        if (player.getCooldowns().isOnCooldown(this)) return;
+        if (isOnCooldown(gunStack, level)) return;
         for (int i = 0; i < count; i++) {
             if (!canShoot(gunStack, player)) break;
             if (!player.isCreative()) {
@@ -280,7 +286,7 @@ public abstract class GunItem extends Item {
             addShotHistory(gunStack, level);
             applyRecoil(player);
         }
-        player.getCooldowns().addCooldown(this, getCurrentCooldown(gunStack));
+        gunStack.getOrCreateTag().putLong(TAG_LAST_FIRE_TIME, level.getGameTime());
     }
 
     public void shootProjectile(Level level, Player player, ItemStack gunStack) {
@@ -396,7 +402,7 @@ public abstract class GunItem extends Item {
         return accuracy;
     }
 
-    private int getCurrentCooldown(ItemStack stack) {
+    public int getCurrentCooldown(ItemStack stack) {
         int cd = properties.getBaseCooldown();
         for (Attachment a : getAttachments(stack)) {
             if (a.getType() == Attachment.Type.SILENCER) {
