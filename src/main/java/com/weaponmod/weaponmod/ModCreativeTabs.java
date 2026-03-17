@@ -41,6 +41,9 @@ public class ModCreativeTabs {
                         output.accept(ModItems.SCOPE.get());
                         output.accept(ModItems.SILENCER.get());
                         output.accept(ModItems.LASER.get());
+                        output.accept(ModItems.UPGRADE_SINGLE_PRECISION.get());
+                        output.accept(ModItems.UPGRADE_BURST.get());
+                        output.accept(ModItems.UPGRADE_AUTO.get());
                         output.accept(ModItems.RIFLE_AMMO.get());
                         output.accept(ModItems.PISTOL_AMMO.get());
                     })

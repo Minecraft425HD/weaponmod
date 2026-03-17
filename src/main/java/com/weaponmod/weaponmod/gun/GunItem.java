@@ -27,8 +27,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import com.weaponmod.weaponmod.upgrade.BaseFireModeUpgradeItem;
+import com.weaponmod.weaponmod.upgrade.FireModeUpgradeType;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class GunItem extends Item {
@@ -41,6 +44,8 @@ public abstract class GunItem extends Item {
     private static final String TAG_ATTACHMENT_1 = "Attachment1";
     private static final String TAG_ATTACHMENT_2 = "Attachment2";
     private static final String TAG_AMMO_TYPE = "AmmoType";
+    private static final String TAG_UNLOCKED_MODES = "UnlockedModes";
+    private static final String TAG_SINGLE_PRECISION = "SinglePrecisionUpgrade";
 
     public GunItem(GunProperties properties) {
         super(new Item.Properties().stacksTo(1).durability(properties.getDurability()));
@@ -64,18 +69,40 @@ public abstract class GunItem extends Item {
         return stack.getOrCreateTag().getInt(TAG_FIRE_MODE);
     }
 
+    public int getUnlockedModes(ItemStack stack) {
+        CompoundTag tag = stack.getOrCreateTag();
+        if (!tag.contains(TAG_UNLOCKED_MODES)) return 1; // default: single only
+        return tag.getInt(TAG_UNLOCKED_MODES);
+    }
+
+    public void setUnlockedModes(ItemStack stack, int bitmask) {
+        stack.getOrCreateTag().putInt(TAG_UNLOCKED_MODES, bitmask);
+    }
+
+    public Set<Integer> getCompatibleFireModes() {
+        return Set.of(0);
+    }
+
     public void cycleFireMode(ItemStack stack, Player player) {
-        int mode = getFireMode(stack);
-        mode = (mode + 1) % 3;
-        stack.getOrCreateTag().putInt(TAG_FIRE_MODE, mode);
-        String modeName = switch (mode) {
-            case 0 -> "§aEinzelfeuer";
-            case 1 -> "§eBurst (3)";
-            case 2 -> "§cVollauto";
-            default -> "";
-        };
-        player.displayClientMessage(Component.literal("Feuermodus: " + modeName), true);
-        player.playSound(ModSounds.CLICK.get(), 0.5F, 1.0F);
+        int current = getFireMode(stack);
+        int unlocked = getUnlockedModes(stack);
+
+        for (int i = 1; i <= 3; i++) {
+            int next = (current + i) % 3;
+            if ((unlocked & (1 << next)) != 0) {
+                stack.getOrCreateTag().putInt(TAG_FIRE_MODE, next);
+                String modeName = switch (next) {
+                    case 0 -> "§aEinzelfeuer";
+                    case 1 -> "§eBurst (3)";
+                    case 2 -> "§cVollauto";
+                    default -> "";
+                };
+                player.displayClientMessage(Component.literal("Feuermodus: " + modeName), true);
+                player.playSound(ModSounds.CLICK.get(), 0.5F, 1.0F);
+                return;
+            }
+        }
+        player.displayClientMessage(Component.literal("§7Keine weiteren Modi freigeschaltet."), true);
     }
 
     // Fügt ein Attachment in den nächsten freien Slot ein.
@@ -133,6 +160,53 @@ public abstract class GunItem extends Item {
     public boolean overrideOtherStackedOnMe(ItemStack thisStack, ItemStack other, Slot slot,
                                              ClickAction action, Player player, SlotAccess access) {
         if (action != ClickAction.SECONDARY) return false;
+
+        // --- Fire Mode Upgrade handling ---
+        if (other.getItem() instanceof BaseFireModeUpgradeItem upgradeItem) {
+            FireModeUpgradeType upgradeType = upgradeItem.getUpgradeType();
+            int requiredMode = upgradeType.getModeIndex();
+
+            if (requiredMode != -1 && !getCompatibleFireModes().contains(requiredMode)) {
+                if (!player.level().isClientSide) {
+                    player.displayClientMessage(
+                        Component.literal("§cDiese Waffe unterstützt diesen Feuermodus nicht!"), true);
+                }
+                return true;
+            }
+
+            if (requiredMode != -1) {
+                int unlocked = getUnlockedModes(thisStack);
+                if ((unlocked & (1 << requiredMode)) != 0) {
+                    if (!player.level().isClientSide) {
+                        player.displayClientMessage(
+                            Component.literal("§cDieser Modus ist bereits freigeschaltet!"), true);
+                    }
+                    return true;
+                }
+            } else {
+                if (thisStack.getOrCreateTag().getBoolean(TAG_SINGLE_PRECISION)) {
+                    if (!player.level().isClientSide) {
+                        player.displayClientMessage(
+                            Component.literal("§cPräzisions-Upgrade bereits montiert!"), true);
+                    }
+                    return true;
+                }
+            }
+
+            if (requiredMode != -1) {
+                int unlocked = getUnlockedModes(thisStack);
+                setUnlockedModes(thisStack, unlocked | (1 << requiredMode));
+            } else {
+                thisStack.getOrCreateTag().putBoolean(TAG_SINGLE_PRECISION, true);
+            }
+            other.shrink(1);
+            if (!player.level().isClientSide) {
+                player.displayClientMessage(
+                    Component.literal("§a" + upgradeType.getDisplayName() + " angewendet!"), true);
+            }
+            return true;
+        }
+
         if (!(other.getItem() instanceof BaseAttachmentItem attachmentItem)) return false;
 
         Attachment attachment = attachmentItem.getModAttachment();
@@ -299,7 +373,7 @@ public abstract class GunItem extends Item {
         stack.getOrCreateTag().putInt(TAG_SHOTS_FIRED, 0);
     }
 
-    private double getCurrentAccuracy(ItemStack stack) {
+    protected double getCurrentAccuracy(ItemStack stack) {
         double accuracy = properties.getBaseAccuracy();
         for (Attachment a : getAttachments(stack)) accuracy *= a.getAccuracyMultiplier();
         int shots = getShotsFired(stack);
@@ -309,6 +383,9 @@ public abstract class GunItem extends Item {
             resetShotHistory(stack);
         } else {
             accuracy *= Math.max(0.5, 1.0 - shots * 0.05);
+        }
+        if (getFireMode(stack) == 0 && stack.getOrCreateTag().getBoolean(TAG_SINGLE_PRECISION)) {
+            accuracy = Math.min(1.0, accuracy * 1.1);
         }
         return accuracy;
     }
@@ -348,6 +425,16 @@ public abstract class GunItem extends Item {
                 })
                 .collect(Collectors.joining(", "));
             tooltip.add(Component.literal("§7Zubehör: §d" + names));
+        }
+        int unlocked = getUnlockedModes(stack);
+        List<String> modeNames = new ArrayList<>();
+        if ((unlocked & 2) != 0) modeNames.add("Burst");
+        if ((unlocked & 4) != 0) modeNames.add("Vollauto");
+        if (!modeNames.isEmpty()) {
+            tooltip.add(Component.literal("§7Freigeschaltete Modi: §e" + String.join(", ", modeNames)));
+        }
+        if (stack.getOrCreateTag().getBoolean(TAG_SINGLE_PRECISION)) {
+            tooltip.add(Component.literal("§7Upgrade: §aPräzisions-Verbesserung (+10%)"));
         }
         Item ammoType = getLoadedAmmoType(stack);
         tooltip.add(Component.literal("§7Geladene Munition: §b" + ammoType.getDescription().getString()));

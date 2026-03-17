@@ -4,6 +4,9 @@ import com.weaponmod.weaponmod.WeaponMod;
 import com.weaponmod.weaponmod.attachment.LaserAttachment;
 import com.weaponmod.weaponmod.attachment.ScopeAttachment;
 import com.weaponmod.weaponmod.attachment.SilencerAttachment;
+import com.weaponmod.weaponmod.upgrade.SingleFireUpgradeItem;
+import com.weaponmod.weaponmod.upgrade.BurstFireUpgradeItem;
+import com.weaponmod.weaponmod.upgrade.AutoFireUpgradeItem;
 import com.weaponmod.weaponmod.grenade.FlashGrenadeItem;
 import com.weaponmod.weaponmod.grenade.FragGrenadeItem;
 import com.weaponmod.weaponmod.grenade.SmokeGrenadeItem;
@@ -68,4 +71,12 @@ public class ModItems {
     public static final RegistryObject<Item> SCOPE = ITEMS.register("scope", ScopeAttachment::new);
     public static final RegistryObject<Item> SILENCER = ITEMS.register("silencer", SilencerAttachment::new);
     public static final RegistryObject<Item> LASER = ITEMS.register("laser", LaserAttachment::new);
+
+    // ---- Feuermodus-Upgrades ----
+    public static final RegistryObject<Item> UPGRADE_SINGLE_PRECISION = ITEMS.register("upgrade_single_precision",
+            SingleFireUpgradeItem::new);
+    public static final RegistryObject<Item> UPGRADE_BURST = ITEMS.register("upgrade_burst",
+            BurstFireUpgradeItem::new);
+    public static final RegistryObject<Item> UPGRADE_AUTO = ITEMS.register("upgrade_auto",
+            AutoFireUpgradeItem::new);
 }
