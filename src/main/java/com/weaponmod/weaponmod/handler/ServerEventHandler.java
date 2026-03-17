@@ -24,11 +24,7 @@ public class ServerEventHandler {
                 ItemStack gunStack = slot == -1 ? player.getOffhandItem() : player.getInventory().getItem(slot);
                 if (gunStack.getItem() instanceof GunItem gun && gun.getFireMode(gunStack) == 2) {
                     if (gun.canShoot(gunStack, player)) {
-                        if (!player.isCreative()) {
-                            gun.setCurrentAmmo(gunStack, gun.getCurrentAmmo(gunStack) - 1);
-                        }
-                        gun.shootProjectile(player.level(), player, gunStack);
-                        gun.addShotHistory(gunStack, player.level());
+                        gun.performShots(player.level(), player, gunStack, 1);
                     } else {
                         player.getPersistentData().remove(ModNBT.AUTO_FIRE_ACTIVE);
                     }

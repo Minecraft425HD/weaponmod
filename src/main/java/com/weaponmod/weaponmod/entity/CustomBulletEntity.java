@@ -30,6 +30,7 @@ public class CustomBulletEntity extends AbstractArrow {
     private static final EntityDataAccessor<Integer> RANGE = SynchedEntityData.defineId(CustomBulletEntity.class, EntityDataSerializers.INT);
 
     private double startX, startY, startZ;
+    private boolean startPosSet = false;
 
     public CustomBulletEntity(EntityType<? extends AbstractArrow> type, Level level) {
         super(type, level);
@@ -46,6 +47,7 @@ public class CustomBulletEntity extends AbstractArrow {
         this.startX = this.getX();
         this.startY = this.getY();
         this.startZ = this.getZ();
+        this.startPosSet = true;
     }
 
     @Override
@@ -100,6 +102,12 @@ public class CustomBulletEntity extends AbstractArrow {
 
     @Override
     public void tick() {
+        if (!startPosSet) {
+            startX = this.getX();
+            startY = this.getY();
+            startZ = this.getZ();
+            startPosSet = true;
+        }
         super.tick();
         double distSq = this.distanceToSqr(startX, startY, startZ);
         int range = this.entityData.get(RANGE);
@@ -140,5 +148,6 @@ public class CustomBulletEntity extends AbstractArrow {
         this.startX = tag.getDouble("StartX");
         this.startY = tag.getDouble("StartY");
         this.startZ = tag.getDouble("StartZ");
+        this.startPosSet = true;
     }
 }
