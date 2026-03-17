@@ -426,15 +426,17 @@ public abstract class GunItem extends Item {
                 .collect(Collectors.joining(", "));
             tooltip.add(Component.literal("§7Zubehör: §d" + names));
         }
-        int unlocked = getUnlockedModes(stack);
-        List<String> modeNames = new ArrayList<>();
-        if ((unlocked & 2) != 0) modeNames.add("Burst");
-        if ((unlocked & 4) != 0) modeNames.add("Vollauto");
-        if (!modeNames.isEmpty()) {
-            tooltip.add(Component.literal("§7Freigeschaltete Modi: §e" + String.join(", ", modeNames)));
-        }
-        if (stack.getOrCreateTag().getBoolean(TAG_SINGLE_PRECISION)) {
-            tooltip.add(Component.literal("§7Upgrade: §aPräzisions-Verbesserung (+10%)"));
+        if (stack.hasTag()) {
+            int unlocked = getUnlockedModes(stack);
+            List<String> modeNames = new ArrayList<>();
+            if ((unlocked & 2) != 0) modeNames.add("Burst");
+            if ((unlocked & 4) != 0) modeNames.add("Vollauto");
+            if (!modeNames.isEmpty()) {
+                tooltip.add(Component.literal("§7Freigeschaltete Modi: §e" + String.join(", ", modeNames)));
+            }
+            if (stack.getTag().getBoolean(TAG_SINGLE_PRECISION)) {
+                tooltip.add(Component.literal("§7Upgrade: §aPräzisions-Verbesserung (+10%)"));
+            }
         }
         Item ammoType = getLoadedAmmoType(stack);
         tooltip.add(Component.literal("§7Geladene Munition: §b" + ammoType.getDescription().getString()));
